@@ -1,0 +1,8 @@
+httpx
+beautifulsoup4
+spacy
+pandas
+gitpython
+openpyxl
+gensim
+nltk

@@ -1,0 +1,66 @@
+import argparse
+import asyncio
+from file_handling import parse_file_input, process_directory
+from link_processing import fetch_link_preview, classify_topic
+from markdown_handling import create_or_append_markdown, update_readme
+from git_handling import initialize_git_repo, commit_changes
+
+async def add_link_manually(link, topic=None, description=None):
+    """Handles adding a link manually, with automatic topic/description if needed, asynchronously."""
+    if not topic or not description:
+        title, description = await fetch_link_preview(link)
+        if not topic:
+            topic_keywords = classify_topic(title + " " + description)
+            topic = topic_keywords[0].lower() if topic_keywords else 'general'
+    else:
+        title, _ = await fetch_link_preview(link)
+
+    return {link: (topic.lower(), title, description)}
+
+async def process_links(links_data, repo_path):
+    """Processes the links data and creates markdown files and updates the README."""
+    for link, (topic, title, description) in links_data.items():
+        # Sanitize the topic to ensure it is a valid folder name
+        sanitized_topic = ''.join(c for c in topic if c.isalnum() or c in [' ', '-']).strip().lower()
+        if not sanitized_topic:
+            sanitized_topic = 'general'
+        
+        create_or_append_markdown(repo_path, sanitized_topic, link, title, description)
+    
+    # Update README.md
+    update_readme(repo_path)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Organize links by topic and save them in a git repository.')
+    parser.add_argument('--file', type=str, help='Path to the input text or CSV file containing links')
+    parser.add_argument('--directory', type=str, help='Directory containing text, CSV, or spreadsheet files')
+    parser.add_argument('--link', type=str, help='Link to be added manually')
+    parser.add_argument('--topic', type=str, help='Topic of the manually added link (optional)')
+    parser.add_argument('--description', type=str, help='Description of the manually added link (optional)')
+    parser.add_argument('--delimiter', type=str, default=',', help='Delimiter used in the input text or CSV file')
+    parser.add_argument('--repo', type=str, required=True, help='Path to the git repository where links will be saved')
+    
+    args = parser.parse_args()
+
+    links_data = {}
+
+    # Initialize Git repo
+    repo = initialize_git_repo(args.repo)
+
+    if args.file:
+        links_data = asyncio.run(parse_file_input(args.file, args.delimiter))
+
+    elif args.directory:
+        links_data = asyncio.run(process_directory(args.directory, args.delimiter))
+
+    elif args.link:
+        links_data = asyncio.run(add_link_manually(args.link, args.topic, args.description))
+    
+    if links_data:
+        # Process the links asynchronously and create markdown files
+        asyncio.run(process_links(links_data, args.repo))
+
+        # Commit changes to Git
+        commit_changes(repo)
+    else:
+        print("No links were processed. Please check the input.")
