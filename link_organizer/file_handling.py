@@ -2,7 +2,7 @@ import os
 import csv
 import pandas as pd
 import asyncio
-from link_processing import fetch_link_preview, classify_topic
+from .link_processing import fetch_link_preview, classify_topic
 
 async def parse_file_input(file_path, delimiter=','):
     """Parses a single text, CSV, or Excel file asynchronously."""

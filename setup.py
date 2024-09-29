@@ -1,4 +1,9 @@
 from setuptools import setup, find_packages
+import subprocess
+import sys
+
+def install_spacy_model():
+    subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
 
 setup(
     name="link-organizer",
@@ -14,13 +19,13 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'link-organizer=main:main',  # Command to run the program
+            'link-organizer=link_organizer.main:main',
         ],
     },
     description="A tool for organizing links into markdown files with Git integration.",
     author="Your Name",
     author_email="your.email@example.com",
-    url="https://github.com/yourusername/link-organizer",  # Optional GitHub repo link
+    url="https://github.com/yourusername/link-organizer",
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
@@ -28,3 +33,6 @@ setup(
     ],
     python_requires='>=3.6',
 )
+
+# Install spaCy model after setup
+install_spacy_model()

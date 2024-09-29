@@ -1,10 +1,10 @@
 import os
 import argparse
 import asyncio
-from file_handling import parse_file_input, process_directory
-from link_processing import fetch_link_preview, classify_topic
-from markdown_handling import create_or_append_markdown, update_readme
-from git_handling import initialize_git_repo, commit_changes
+from .file_handling import parse_file_input, process_directory
+from .link_processing import fetch_link_preview, classify_topic
+from .markdown_handling import create_or_append_markdown, update_readme
+from .git_handling import initialize_git_repo, commit_changes
 
 def load_processed_links(repo_path):
     """Load the list of processed links from a log file."""
@@ -54,7 +54,7 @@ async def process_links(links_data, repo_path, processed_links):
     # Update README.md
     update_readme(repo_path)
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Organize links by topic and save them in a git repository.')
     parser.add_argument('--file', type=str, help='Path to the input text or CSV file containing links')
     parser.add_argument('--directory', type=str, help='Directory containing text, CSV, or spreadsheet files')
@@ -91,3 +91,6 @@ if __name__ == '__main__':
         commit_changes(repo, message="Appended new links and updated the repository.")
     else:
         print("No links were processed. Please check the input.")
+
+if __name__ == '__main__':
+    main()
