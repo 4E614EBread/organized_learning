@@ -1,4 +1,6 @@
 import os
+from urllib.parse import quote
+from .common_utils import iterate_topics
 
 def create_or_append_markdown(directory, topic, link, title, description):
     """Creates or appends the link and description to a markdown file."""
@@ -34,16 +36,14 @@ def update_readme(directory):
     readme_path = os.path.join(directory, "README.md")
     readme_content = "# Topic Index\n\n"
     
-    for letter_folder in sorted(os.listdir(directory)):
-        folder_path = os.path.join(directory, letter_folder)
-        if os.path.isdir(folder_path):
-            readme_content += f"## {letter_folder}\n"
-            for topic_folder in sorted(os.listdir(folder_path)):
-                topic_path = os.path.join(folder_path, topic_folder)
-                if os.path.isdir(topic_path):
-                    markdown_file = os.path.join(topic_path, f"{topic_folder.lower()}.md")
-                    topic = os.path.splitext(topic_folder)[0]
-                    readme_content += f"- [{topic}]({letter_folder}/{topic_folder}/{topic.lower()}.md)\n"
+    current_letter = None
+    for letter_folder, _, topic_info in iterate_topics(directory):
+        if letter_folder != current_letter:
+            readme_content += f"\n## {letter_folder}\n"
+            current_letter = letter_folder
+        
+        encoded_path = quote(topic_info['encoded_path'])
+        readme_content += f"- [{topic_info['topic']}]({encoded_path})\n"
     
     with open(readme_path, 'w') as readme:
         readme.write(readme_content)
