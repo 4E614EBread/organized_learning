@@ -4,6 +4,7 @@ import asyncio
 from .file_handling import parse_file_input, process_directory
 from .link_processing import fetch_link_preview, classify_topic
 from .markdown_handling import create_or_append_markdown, update_readme
+from .vitepress_handling import update_vitepress_config
 from .git_handling import initialize_git_repo, commit_changes
 
 def load_processed_links(repo_path):
@@ -53,6 +54,9 @@ async def process_links(links_data, repo_path, processed_links):
     
     # Update README.md
     update_readme(repo_path)
+    
+    # Update VitePress config
+    update_vitepress_config(repo_path)
 
 def main():
     parser = argparse.ArgumentParser(description='Organize links by topic and save them in a git repository.')
@@ -87,8 +91,12 @@ def main():
         # Process the links asynchronously and create markdown files
         asyncio.run(process_links(links_data, args.repo, processed_links))
 
+        # Update README.md and VitePress config
+        update_readme(args.repo)
+        update_vitepress_config(args.repo)
+
         # Commit changes to Git
-        commit_changes(repo, message="Appended new links and updated the repository.")
+        commit_changes(repo, message="Appended new links, updated README, and VitePress config.")
     else:
         print("No links were processed. Please check the input.")
 
